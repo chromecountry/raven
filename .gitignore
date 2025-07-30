@@ -42,9 +42,17 @@ ENV/
 logs/
 *.log
 
-# Data files (optional - uncomment if you don't want to track data)
-# data/
-# *.beancount
+# Data files
+data/attachments/
+data/exports/
+data/ledger/
+
+# Ignore beancount files except sample data
+*.beancount
+!data/sample_data/*.beancount
+
+# Keep sample data but ignore generated data
+!data/sample_data/
 
 # Node.js
 node_modules/
