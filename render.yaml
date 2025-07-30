@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: raven-api
+    env: python
+    plan: free
+    buildCommand: pip install -r cfg/prd/requirements.txt
+    startCommand: python api.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.0
+      - key: PORT
+        value: 5000
+
+  - type: web
+    name: raven-frontend
+    env: static
+    plan: free
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/build
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://raven-receipt-processor.onrender.com

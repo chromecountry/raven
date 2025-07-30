@@ -11,29 +11,34 @@ This document makes the following assumptions:
   - Email processing and IMAP protocols
   - PDF parsing and OCR techniques
   - Double-entry bookkeeping principles
+  - React and modern web development
+  - RESTful API design and consumption
 
   - developers have a thorough knowledge of:
   - Python, Beancount, Fava, Pandas
   - Linux, bash
   - Web development (HTML, CSS, JavaScript)
+  - Node.js, npm, and modern frontend tooling
 
 ## Introduction ##
 
-Raven is a receipt processing system that:
+Raven is a comprehensive, enterprise-grade receipt processing system that:
 
 1. automatically processes email receipts by:
-        1. Fetching emails with PDF attachments
+        1. Fetching emails with PDF attachments using IMAP
         1. Extracting transaction data using OCR and text parsing
         1. Storing transactions in Beancount format
+        1. Providing real-time processing status and feedback
 
 1. provides the following functionalities:
-        1. Email receipt processing and parsing
+        1. Email receipt processing and parsing with time window filtering
         1. Bank statement comparison and reconciliation
-        1. Web-based transaction management via Fava
+        1. Modern React + Material-UI web interface
+        1. Professional dashboard with analytics and charts
+        1. Advanced ledger management with data grids
         1. Command-line tools for automation
 
-These functionalities are served by a modular Python application. Processing logic
-for different receipt types lives within the `src/processors/` directory.
+These functionalities are served by a modular Python backend with a modern React frontend. Processing logic for different receipt types lives within the `src/processors/` directory.
 
 ## Configuration ##
 
@@ -71,16 +76,17 @@ For Gmail, you'll need to:
 2. Generate an App Password
 3. Use the App Password instead of your regular password
 
-### Fava Configuration ###
+### Frontend Configuration ###
 
-The web interface runs on Fava, which requires:
-   - Host configuration (default: localhost)
-   - Port configuration (default: 5000)
-   - Beancount ledger file path
+The React frontend requires Node.js 16+ and npm. Create a `.env` file in the frontend directory:
 
-These settings are configured in `src/core/credentials.py`.
+```env
+REACT_APP_API_URL=http://localhost:5000
+```
 
 ### Installation ###
+
+#### Backend Dependencies
 
 Ensure that Python 3.8 or greater is available in the environment. Also, if
 virtual environments are in use, ensure that the correct one is active.
@@ -101,6 +107,15 @@ sudo apt-get install tesseract-ocr
 brew install tesseract
 ```
 
+#### Frontend Dependencies
+
+Install frontend dependencies:
+
+```bash
+cd frontend
+npm install
+```
+
 ## Workflow #
 
 ## Execution ##
@@ -110,6 +125,9 @@ brew install tesseract
 The Raven application provides both CLI and web interfaces. To run it, do:
 
 ```bash
+# Start the complete application (backend + frontend)
+./start.sh
+
 # Process emails and launch web interface
 ./app.sh
 
@@ -121,9 +139,23 @@ The Raven application provides both CLI and web interfaces. To run it, do:
 
 # Compare bank statement
 ./app.sh compare-bank data/sample_data/sample_bank_statement.csv
+
+# Run comprehensive demo
+./demo.sh
 ```
 
 This will run the application in the configured environment.
+
+### Frontend Development ###
+
+For frontend development:
+
+```bash
+cd frontend
+npm start
+```
+
+The frontend will be available at `http://localhost:3000`.
 
 ### Sending a bank statement for comparison ###
 
@@ -176,6 +208,8 @@ Bank-only transactions:
 ```
 raven/
 ├── app.sh                    # Main application launcher
+├── start.sh                  # Complete application starter
+├── demo.sh                   # Comprehensive demo runner
 ├── cfg/                      # Configuration files
 │   ├── dev/                  # Development environment
 │   │   └── requirements.txt
@@ -184,7 +218,16 @@ raven/
 │   └── prd/                  # Production environment
 │       ├── requirements.txt
 │       └── env_example.txt
-├── src/                      # Source code
+├── frontend/                 # React + Material-UI frontend
+│   ├── public/              # Static assets
+│   ├── src/
+│   │   ├── components/      # Reusable UI components
+│   │   ├── pages/          # Page components
+│   │   ├── services/       # API service layer
+│   │   ├── App.js          # Main app component
+│   │   └── index.js        # React entry point
+│   └── package.json
+├── src/                      # Backend source code
 │   ├── core/                 # Core configuration and ledger
 │   │   ├── config.py
 │   │   ├── credentials.py    # Actual credentials (gitignored)
@@ -195,7 +238,7 @@ raven/
 │   │   ├── pdf_parser.py
 │   │   ├── bank_processor.py
 │   │   └── ledger_manager.py
-│   ├── ui/                   # User interface modules
+│   ├── ui/                   # Legacy UI modules
 │   │   ├── main.py
 │   │   └── bank_comparison.py
 │   └── utils/                # Utility functions
@@ -204,6 +247,9 @@ raven/
 │   ├── attachments/          # Downloaded PDF attachments
 │   ├── exports/              # Exported data
 │   └── sample_data/          # Sample data for testing
+│       ├── sample_bank_statement.csv
+│       ├── alternative_bank_statement.csv
+│       └── receipts/         # Sample PDF receipts
 ├── tests/                    # Test suite
 │   ├── unit/                 # Unit tests
 │   └── integration/          # Integration tests
@@ -223,25 +269,56 @@ raven/
 - Searches for unread emails with PDF attachments
 - Downloads and processes receipt PDFs
 - Extracts transaction data using OCR and text parsing
+- Time window filtering for targeted processing
+- Real-time processing status and feedback
 
 ### PDF Parsing ###
 - Uses `pdfplumber` for text extraction
 - Falls back to OCR for scanned receipts
 - Extracts amount, date, and merchant information
 - Handles various receipt formats
+- Advanced OCR with OpenCV + Tesseract
 
 ### Transaction Comparison ###
 - Normalizes transaction formats for comparison
 - Matches transactions by amount and date
 - Shows matching, ledger-only, and bank-only transactions
 - Command-line output for easy review
+- Drag-and-drop CSV upload interface
+- Visual indicators for different transaction states
 
-### Fava Integration ###
-- Professional web interface for transaction management
-- Real-time updates when ledger changes
-- Advanced filtering and search capabilities
+### Modern Web Interface ###
+- React 18 with Material-UI 5 components
+- Professional dashboard with analytics
+- Interactive charts (pie charts, bar charts)
+- Advanced data grid with sorting and filtering
+- Real-time updates and status monitoring
+- Responsive design for all devices
+- Drag-and-drop file uploads
+- Loading states and error handling
+
+### Dashboard Analytics ###
+- Transaction statistics and trends
+- Category breakdown with pie charts
+- Recent activity visualization
+- System health monitoring
+- Real-time data updates
+- Export capabilities
+
+### Ledger Management ###
+- Professional data grid interface
+- Complete transaction information
+- Sorting, filtering, and pagination
+- Statistical overview and metrics
 - Export functionality for reports
 - Mobile-responsive design
+
+### API Integration ###
+- RESTful API endpoints
+- CORS support for frontend-backend communication
+- Comprehensive error handling
+- Health check endpoints
+- Secure credential management
 
 ## Development ##
 
@@ -253,7 +330,29 @@ python tests/integration/test_system.py
 
 # Generate sample data
 python scripts/generate_sample_pdfs.py
+
+# Test bank statement comparison
+python src/ui/bank_comparison.py data/sample_data/sample_bank_statement.csv
 ```
+
+### Frontend Development ###
+
+```bash
+cd frontend
+npm start          # Development server
+npm run build     # Production build
+npm test          # Run tests
+```
+
+### Sample Data ###
+
+Generate sample PDF receipts for testing:
+
+```bash
+python scripts/generate_sample_pdfs.py
+```
+
+This creates 14 sample PDF receipts in `data/sample_data/receipts/` with realistic merchant names and amounts.
 
 ### Project Structure Benefits ###
 
@@ -262,6 +361,33 @@ python scripts/generate_sample_pdfs.py
 - **Modular Design**: Clear separation of concerns
 - **Testing Support**: Dedicated test structure
 - **Documentation**: Organized docs structure
+- **Modern Frontend**: React + Material-UI for professional UX
+- **Scalable Architecture**: Ready for production deployment
+
+## Technology Stack ##
+
+### Backend (Python + Flask)
+- **Flask**: Lightweight web framework with RESTful API
+- **Beancount**: Double-entry bookkeeping system
+- **IMAPClient**: Email processing and attachment handling
+- **PDFPlumber**: PDF text extraction and parsing
+- **Pandas**: Data processing and CSV handling
+- **OpenCV + Tesseract**: OCR for scanned receipt processing
+
+### Frontend (React + Material-UI)
+- **React 18**: Modern React with hooks and functional components
+- **Material-UI 5**: Professional UI component library
+- **React Router**: Client-side routing
+- **Axios**: HTTP client for API communication
+- **Recharts**: Beautiful and interactive data visualization
+- **MUI X Data Grid**: Advanced table component
+- **Date-fns**: Modern date utility library
+
+### Infrastructure
+- **CORS Support**: Cross-origin resource sharing
+- **Environment Configuration**: Multi-environment support
+- **Error Handling**: Comprehensive error management
+- **Security**: Secure credential management
 
 ## Security Notes ##
 
@@ -270,6 +396,8 @@ python scripts/generate_sample_pdfs.py
 - Keep PDF attachments in secure location
 - Regularly backup Beancount ledger file
 - `credentials.py` is gitignored to prevent accidental commits
+- Implement proper CORS configuration for production
+- Use environment variables for sensitive configuration
 
 ## Future Enhancements ##
 
@@ -278,3 +406,10 @@ python scripts/generate_sample_pdfs.py
 - Automatic categorization of transactions
 - Integration with more bank APIs
 - Mobile app integration
+- Real-time sync with WebSocket connections
+- Advanced analytics and predictive spending analysis
+- Multi-currency support
+- Cloud deployment with auto-scaling
+- Database integration (PostgreSQL/MySQL)
+- OAuth2 authentication and role-based access
+- API versioning for backward compatibility

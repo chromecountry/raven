@@ -1,5 +1,5 @@
+flask>=2.3.0
 beancount>=2.3.5
-fava>=1.25
 pandas>=2.0.0
 python-dotenv>=1.0.0
 imapclient>=3.0.0
@@ -9,4 +9,5 @@ opencv-python>=4.8.0
 pytesseract>=0.3.10
 Pillow>=10.0.0
 python-dateutil>=2.8.0
-reportlab>=4.0.0 
+reportlab>=4.0.0
+flask-cors>=4.0.0 

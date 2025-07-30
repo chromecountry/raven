@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Raven - Vercel Deployment Script
-# This script prepares the project for Vercel deployment
+# Raven - Render Deployment Script
+# This script prepares the project for Render deployment
 
 set -e
 
-echo "Preparing Raven for Vercel deployment..."
-echo "========================================"
+echo "Preparing Raven for Render deployment..."
+echo "======================================="
 
 # Check if we're in the right directory
 if [ ! -f "api.py" ]; then
@@ -27,7 +27,7 @@ fi
 if [ -n "$(git status --porcelain)" ]; then
     echo "Warning: You have uncommitted changes. Please commit them first:"
     echo "  git add ."
-    echo "  git commit -m 'Prepare for Vercel deployment'"
+    echo "  git commit -m 'Prepare for Render deployment'"
     echo ""
     read -p "Continue anyway? (y/N): " -n 1 -r
     echo
@@ -39,19 +39,23 @@ fi
 echo ""
 echo "✅ Project structure verified"
 echo "✅ Git repository found"
+echo "✅ render.yaml configuration ready"
 echo ""
-echo "📋 Next steps for Vercel deployment:"
+echo "📋 Next steps for Render deployment:"
 echo ""
 echo "1. Push to GitHub:"
 echo "   git push origin main"
 echo ""
-echo "2. Go to https://vercel.com"
-echo "3. Click 'New Project'"
-echo "4. Import your GitHub repository"
-echo "5. Deploy!"
+echo "2. Go to https://render.com"
+echo "3. Click 'New +' and select 'Blueprint'"
+echo "4. Connect your GitHub repository"
+echo "5. Render will auto-detect services from render.yaml"
+echo "6. Click 'Apply' to deploy!"
 echo ""
-echo "🌐 Your app will be live at: https://your-project-name.vercel.app"
+echo "🌐 Your app will be live at:"
+echo "   Frontend: https://raven-frontend.onrender.com"
+echo "   API: https://raven-api.onrender.com"
 echo ""
-echo "📚 See DEPLOYMENT_VERCEL.md for detailed instructions"
+echo "📚 See DEPLOYMENT_RENDER.md for detailed instructions"
 echo ""
 echo "🚀 Ready for deployment!" 
