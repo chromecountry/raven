@@ -1,2 +1,0 @@
-#!/bin/bash
-. "${WORKON_HOME}/raven/bin/activate";

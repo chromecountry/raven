@@ -9,6 +9,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from werkzeug.utils import secure_filename
 
 # Add project root to path
@@ -21,10 +22,12 @@ from src.processors.ledger_manager import LedgerManager  # noqa: E402
 from src.processors.bank_processor import BankProcessor  # noqa: E402
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for React frontend
 
 # Ensure upload directory exists
 UPLOAD_FOLDER = Path('uploads')
 UPLOAD_FOLDER.mkdir(exist_ok=True)
+
 
 @app.route('/api/process-emails', methods=['POST'])
 def process_emails():
@@ -36,10 +39,10 @@ def process_emails():
         if request.is_json:
             start_date_str = request.json.get('start_date')
             end_date_str = request.json.get('end_date')
-        
+
         start_date = None
         end_date = None
-        
+
         if start_date_str:
             try:
                 start_date = datetime.strptime(
@@ -50,7 +53,7 @@ def process_emails():
                     'success': False,
                     'error': 'Invalid start_date format. Use YYYY-MM-DD'
                 }), 400
-        
+
         if end_date_str:
             try:
                 end_date = datetime.strptime(
@@ -103,6 +106,7 @@ def process_emails():
             'error': str(e)
         }), 500
 
+
 @app.route('/api/upload-bank-statement', methods=['POST'])
 def upload_bank_statement():
     """Upload and compare bank statement"""
@@ -122,7 +126,7 @@ def upload_bank_statement():
             # Process the CSV
             ledger_manager = LedgerManager()
             bank_processor = BankProcessor(ledger_manager)
-            
+
             bank_transactions = bank_processor.parse_csv(str(filepath))
             comparison = bank_processor.compare_transactions(bank_transactions)
 
@@ -145,6 +149,7 @@ def upload_bank_statement():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+
 @app.route('/api/ledger')
 def view_ledger():
     """View ledger transactions"""
@@ -158,11 +163,14 @@ def view_ledger():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+
 @app.route('/api/health')
 def health():
     """Health check endpoint"""
     return jsonify({'status': 'healthy'})
 
+
+# For Vercel deployment
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True) 
