@@ -1,30 +1,73 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 
-  (process.env.NODE_ENV === 'production' 
-    ? `${window.location.origin}/api` 
-    : 'http://localhost:5000');
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
+// Configure axios to include credentials for session management
+axios.defaults.withCredentials = true;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  withCredentials: true,
 });
 
+// Request interceptor to add auth headers if needed
+api.interceptors.request.use(
+  (config) => {
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor to handle auth errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Don't redirect, let the App component handle auth state
+      console.log('Authentication failed, will be handled by App component');
+    }
+    return Promise.reject(error);
+  }
+);
+
+export const authService = {
+  async login(credentials) {
+    const response = await api.post('/api/login', credentials);
+    return response.data;
+  },
+
+  async logout() {
+    const response = await api.post('/api/logout');
+    return response.data;
+  },
+
+  async checkAuthStatus() {
+    const response = await api.get('/api/auth-status');
+    return response.data;
+  },
+
+  async testSession() {
+    const response = await api.get('/api/test-session');
+    return response.data;
+  },
+};
+
 export const emailService = {
-  processEmails: async (startDate = null, endDate = null) => {
+  async processEmails(timeWindow = null) {
     const payload = {};
-    if (startDate) payload.start_date = startDate;
-    if (endDate) payload.end_date = endDate;
-    
+    if (timeWindow) {
+      payload.start_date = timeWindow.startDate;
+      payload.end_date = timeWindow.endDate;
+    }
     const response = await api.post('/api/process-emails', payload);
     return response.data;
   },
 };
 
 export const bankService = {
-  uploadStatement: async (file) => {
+  async uploadStatement(file) {
     const formData = new FormData();
     formData.append('file', file);
     
@@ -38,14 +81,14 @@ export const bankService = {
 };
 
 export const ledgerService = {
-  getTransactions: async () => {
+  async getTransactions() {
     const response = await api.get('/api/ledger');
     return response.data;
   },
 };
 
 export const healthService = {
-  checkHealth: async () => {
+  async checkHealth() {
     const response = await api.get('/api/health');
     return response.data;
   },

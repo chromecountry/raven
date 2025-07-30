@@ -28,9 +28,10 @@ class ReceiptParser:
         return text
 
     def _ocr_extract(self, pdf_path: Path) -> str:
-        """Extract text using OCR"""
-        # Convert PDF to image and use OCR
-        # This is a simplified version - you might need more sophisticated PDF to image conversion
+        """Extract text using OCR - simplified version without opencv/pytesseract"""
+        # Return empty string if OCR dependencies not available
+        # In production, you would install opencv-python and pytesseract
+        print(f"OCR not available for {pdf_path.name}")
         return ''
 
     def parse_receipt(self, pdf_path: Path) -> Dict[str, Optional[str]]:

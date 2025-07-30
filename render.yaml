@@ -3,13 +3,23 @@ services:
     name: raven-api
     env: python
     plan: free
-    buildCommand: pip install -r cfg/prd/requirements.txt
+    buildCommand: |
+      echo "python-3.11.0" > runtime.txt
+      python3.11 -m pip install -r cfg/prd/requirements.txt
     startCommand: python api.py
     envVars:
       - key: PYTHON_VERSION
-        value: 3.9.0
+        value: 3.11.0
       - key: PORT
         value: 5000
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ADMIN_USERNAME
+        generateValue: true
+      - key: ADMIN_PASSWORD
+        generateValue: true
+      - key: ALLOWED_ORIGINS
+        value: https://raven-frontend-mb0t.onrender.com
 
   - type: web
     name: raven-frontend
@@ -19,4 +29,4 @@ services:
     staticPublishPath: ./frontend/build
     envVars:
       - key: REACT_APP_API_URL
-        value: https://raven-receipt-processor.onrender.com
+        value: https://raven-api.onrender.com

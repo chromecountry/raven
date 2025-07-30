@@ -4,7 +4,7 @@
 Bank statement processor for parsing CSV files and comparing with ledger
 """
 
-import pandas as pd
+import csv
 from datetime import datetime
 from typing import Dict, List
 from src.processors.ledger_manager import LedgerManager
@@ -15,19 +15,20 @@ class BankProcessor:
         self.ledger_manager = ledger_manager
 
     def parse_csv(self, csv_path: str) -> List[Dict]:
-        """Parse bank statement CSV file"""
+        """Parse bank statement CSV file using pure Python"""
         try:
-            df = pd.read_csv(csv_path)
             transactions = []
-
-            for _, row in df.iterrows():
-                transaction = {
-                    'date': self._parse_date(row.get('Date', '')),
-                    'description': row.get('Description', ''),
-                    'amount': row.get('Amount', 0),
-                    'type': row.get('Type', '')
-                }
-                transactions.append(transaction)
+            
+            with open(csv_path, 'r', encoding='utf-8') as file:
+                reader = csv.DictReader(file)
+                for row in reader:
+                    transaction = {
+                        'date': self._parse_date(row.get('Date', '')),
+                        'description': row.get('Description', ''),
+                        'amount': row.get('Amount', 0),
+                        'type': row.get('Type', '')
+                    }
+                    transactions.append(transaction)
 
             return transactions
         except Exception as e:
@@ -37,7 +38,13 @@ class BankProcessor:
     def _parse_date(self, date_str: str) -> datetime:
         """Parse date string to datetime"""
         try:
-            return pd.to_datetime(date_str).date()
+            # Try common date formats
+            for fmt in ['%Y-%m-%d', '%m/%d/%Y', '%d/%m/%Y', '%Y/%m/%d']:
+                try:
+                    return datetime.strptime(date_str.strip(), fmt).date()
+                except ValueError:
+                    continue
+            return datetime.now().date()
         except Exception:
             return datetime.now().date()
 
@@ -87,9 +94,13 @@ class BankProcessor:
         """Normalize transaction format for comparison"""
         normalized = []
         for tx in transactions:
+            # Convert amount to float, handling string formatting
+            amount_str = str(tx.get('amount', 0))
+            amount = float(amount_str.replace('$', '').replace(',', ''))
+            
             normalized.append({
                 'date': tx.get('date'),
-                'amount': float(str(tx.get('amount', 0)).replace('$', '')),
+                'amount': amount,
                 'description': tx.get('description', tx.get('payee', ''))
             })
         return normalized
@@ -99,4 +110,5 @@ class BankProcessor:
         # Simple matching logic - can be enhanced
         amount_match = abs(tx1['amount'] - tx2['amount']) < 0.01
         date_match = tx1['date'] == tx2['date']
+        
         return amount_match and date_match
