@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: raven-receipt-processor
+    env: python
+    buildCommand: pip install -r cfg/prd/requirements.txt
+    startCommand: ./start.sh
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: FAVA_HOST
+        value: 0.0.0.0
+      - key: FAVA_PORT
+        value: $PORT 

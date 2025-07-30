@@ -57,12 +57,28 @@ def launch_fava() -> None:
     print('Press Ctrl+C to stop')
 
     try:
-        subprocess.run([
+        # Try default port first
+        result = subprocess.run([
             'fava',
             '--host', FAVA_HOST,
             '--port', str(FAVA_PORT),
             str(BEANCOUNT_FILE)
-        ])
+        ], capture_output=True, text=True)
+
+        if 'port 5000 is already in use' in result.stderr:
+            # Try alternative port
+            print('Port 5000 busy, trying port 5001...')
+            subprocess.run([
+                'fava',
+                '--host', FAVA_HOST,
+                '--port', '5001',
+                str(BEANCOUNT_FILE)
+            ])
+        else:
+            print(result.stdout)
+            if result.stderr:
+                print(result.stderr)
+
     except KeyboardInterrupt:
         print('\nShutting down...')
     except Exception as e:

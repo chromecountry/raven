@@ -5,9 +5,15 @@ Bank statement comparison tool
 """
 
 import sys
+from pathlib import Path
 from typing import Dict
-from ledger_manager import LedgerManager
-from bank_processor import BankProcessor
+
+# Add project root to path
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
+
+from src.processors.ledger_manager import LedgerManager  # noqa: E402
+from src.processors.bank_processor import BankProcessor  # noqa: E402
 
 
 def compare_bank_statement(csv_path: str) -> Dict:

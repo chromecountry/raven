@@ -80,11 +80,11 @@ fi
 case $COMMAND in
     process-emails)
         echo "Processing emails in $ENV environment..."
-        python src/ui/main.py process-emails
+        PYTHONPATH=. python src/ui/main.py process-emails
         ;;
     launch-fava)
         echo "Launching Fava in $ENV environment..."
-        python src/ui/main.py launch-fava
+        PYTHONPATH=. python src/ui/main.py launch-fava
         ;;
     compare-bank)
         if [ -z "$CSV_FILE" ]; then
@@ -93,7 +93,7 @@ case $COMMAND in
             exit 1
         fi
         echo "Comparing bank statement: $CSV_FILE"
-        python src/ui/bank_comparison.py "$CSV_FILE"
+        PYTHONPATH=. python src/ui/bank_comparison.py "$CSV_FILE"
         ;;
     setup)
         echo "Setting up project..."
