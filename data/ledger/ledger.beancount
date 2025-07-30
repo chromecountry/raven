@@ -1,0 +1,15 @@
+2024-01-15 * "Walmart Supercenter" "Receipt from email"
+  Expenses:Receipts   45.67 USD
+  Assets:Checking    -45.67 USD
+2024-01-16 * "Starbucks Coffee" "Receipt from email"
+  Expenses:Receipts   4.50 USD
+  Assets:Checking    -4.50 USD
+2024-01-17 * "Amazon.com" "Receipt from email"
+  Expenses:Receipts   23.99 USD
+  Assets:Checking    -23.99 USD
+2024-01-18 * "Local Coffee Shop" "Receipt from email"
+  Expenses:Receipts   15.99 USD
+  Assets:Checking    -15.99 USD
+2024-01-19 * "Hardware Store" "Receipt from email"
+  Expenses:Receipts   89.15 USD
+  Assets:Checking    -89.15 USD
