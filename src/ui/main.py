@@ -6,21 +6,45 @@ Main script for receipt processing system with Fava integration
 
 import sys
 import subprocess
+from datetime import datetime
 from src.processors.email_processor import EmailProcessor
 from src.processors.pdf_parser import ReceiptParser
 from src.processors.ledger_manager import LedgerManager
 from src.core.config import FAVA_HOST, FAVA_PORT, BEANCOUNT_FILE
 
 
-def process_emails() -> int:
-    """Process emails and extract receipts"""
+def process_emails(start_date: str = None, end_date: str = None) -> int:
+    """Process emails and extract receipts with optional time window"""
     try:
         email_processor = EmailProcessor()
         receipt_parser = ReceiptParser()
         ledger_manager = LedgerManager()
 
+        # Parse date parameters
+        start_dt = None
+        end_dt = None
+
+        if start_date:
+            try:
+                start_dt = datetime.strptime(start_date, '%Y-%m-%d').date()
+                print(f'Processing emails from {start_date}')
+            except ValueError:
+                print('Error: Invalid start_date format. Use YYYY-MM-DD')
+                return 0
+
+        if end_date:
+            try:
+                end_dt = datetime.strptime(end_date, '%Y-%m-%d').date()
+                print(f'Processing emails until {end_date}')
+            except ValueError:
+                print('Error: Invalid end_date format. Use YYYY-MM-DD')
+                return 0
+
         print('Fetching emails with PDF attachments...')
-        attachments = email_processor.fetch_pdf_attachments()
+        attachments = email_processor.fetch_pdf_attachments(
+            start_date=start_dt,
+            end_date=end_dt
+        )
 
         processed_count = 0
         for filename, file_path in attachments:
@@ -91,15 +115,24 @@ def main() -> int:
         command = sys.argv[1]
 
         if command == 'process-emails':
-            return process_emails()
+            start_date = None
+            end_date = None
+            if len(sys.argv) > 2:
+                start_date = sys.argv[2]
+            if len(sys.argv) > 3:
+                end_date = sys.argv[3]
+            return process_emails(start_date=start_date, end_date=end_date)
         elif command == 'launch-fava':
             launch_fava()
             return 0
         elif command == 'help':
             print('Usage:')
-            print('  python main.py process-emails  # Process emails')
-            print('  python main.py launch-fava     # Launch Fava')
-            print('  python main.py                 # Process emails then launch Fava')
+            print('  python main.py process-emails [YYYY-MM-DD] [YYYY-MM-DD]')
+            print('    # Process emails with optional date range')
+            print('  python main.py launch-fava')
+            print('    # Launch Fava')
+            print('  python main.py')
+            print('    # Process emails then launch Fava')
             return 0
         else:
             print(f'Unknown command: {command}')

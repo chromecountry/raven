@@ -1,41 +1,45 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# Receipt Processing System - Main Application Launcher
+# Raven Receipt Processing System
+# Main application script
 
 set -e
 
 # Default environment
-ENV=${ENV:-prd}
+ENV=${PROJECT_ENV_TYPE:-prd}
 
-# Function to show usage
 show_usage() {
-    echo "Receipt Processing System"
-    echo "========================"
+    echo "Raven Receipt Processing System"
     echo ""
     echo "Usage: $0 [COMMAND] [OPTIONS]"
     echo ""
     echo "Commands:"
-    echo "  process-emails    Process emails and extract receipts"
-    echo "  launch-fava       Launch Fava web interface"
-    echo "  compare-bank      Compare bank statement with ledger"
-    echo "  setup             Setup the project"
-    echo "  test              Run tests"
-    echo "  help              Show this help"
+    echo "  process-emails [START_DATE] [END_DATE]  Process emails with optional date range"
+    echo "  launch-fava                              Launch Fava web interface"
+    echo "  compare-bank                             Compare bank statement with ledger"
+    echo "  setup                                    Setup the project"
+    echo "  test                                     Run tests"
+    echo "  help                                     Show this help"
     echo ""
     echo "Options:"
-    echo "  --env ENV         Environment (dev|stg|prd, default: prd)"
-    echo "  --help            Show this help"
+    echo "  --env ENV                                Environment (dev|stg|prd, default: prd)"
+    echo "  --help                                   Show this help"
+    echo ""
+    echo "Date Format: YYYY-MM-DD (e.g., 2024-01-15)"
     echo ""
     echo "Examples:"
     echo "  $0 process-emails"
+    echo "  $0 process-emails 2024-01-01 2024-01-31"
     echo "  $0 launch-fava"
-    echo "  $0 --env dev process-emails"
+    echo "  $0 --env dev process-emails 2024-01-01"
     echo "  $0 compare-bank data/sample_data/sample_bank_statement.csv"
 }
 
 # Parse command line arguments
 COMMAND=""
 CSV_FILE=""
+START_DATE=""
+END_DATE=""
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -47,7 +51,20 @@ while [[ $# -gt 0 ]]; do
             show_usage
             exit 0
             ;;
-        process-emails|launch-fava|setup|test|help)
+        process-emails)
+            COMMAND="$1"
+            shift
+            # Check for date arguments
+            if [[ -n "$1" && "$1" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
+                START_DATE="$1"
+                shift
+                if [[ -n "$1" && "$1" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
+                    END_DATE="$1"
+                    shift
+                fi
+            fi
+            ;;
+        launch-fava|setup|test|help)
             COMMAND="$1"
             shift
             ;;
@@ -80,7 +97,13 @@ fi
 case $COMMAND in
     process-emails)
         echo "Processing emails in $ENV environment..."
-        PYTHONPATH=. python src/ui/main.py process-emails
+        if [[ -n "$START_DATE" ]]; then
+            echo "Date range: $START_DATE"
+            if [[ -n "$END_DATE" ]]; then
+                echo " to $END_DATE"
+            fi
+        fi
+        PYTHONPATH=. python src/ui/main.py process-emails "$START_DATE" "$END_DATE"
         ;;
     launch-fava)
         echo "Launching Fava in $ENV environment..."

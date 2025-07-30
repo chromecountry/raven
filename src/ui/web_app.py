@@ -6,6 +6,7 @@ Flask web application for receipt processing system
 
 import os
 import sys
+from datetime import datetime
 from pathlib import Path
 from flask import Flask, render_template, request, jsonify
 from werkzeug.utils import secure_filename
@@ -27,20 +28,57 @@ UPLOAD_FOLDER = Path('uploads')
 UPLOAD_FOLDER.mkdir(exist_ok=True)
 app.config['UPLOAD_FOLDER'] = str(UPLOAD_FOLDER)
 
+
 @app.route('/')
 def index():
     """Main page"""
     return render_template('index.html')
 
+
 @app.route('/process-emails', methods=['POST'])
 def process_emails():
-    """Process emails endpoint"""
+    """Process emails endpoint with optional time window"""
     try:
+        # Parse optional date parameters
+        start_date_str = None
+        end_date_str = None
+        if request.is_json:
+            start_date_str = request.json.get('start_date')
+            end_date_str = request.json.get('end_date')
+
+        start_date = None
+        end_date = None
+
+        if start_date_str:
+            try:
+                start_date = datetime.strptime(
+                    start_date_str, '%Y-%m-%d'
+                ).date()
+            except ValueError:
+                return jsonify({
+                    'success': False,
+                    'error': 'Invalid start_date format. Use YYYY-MM-DD'
+                }), 400
+
+        if end_date_str:
+            try:
+                end_date = datetime.strptime(
+                    end_date_str, '%Y-%m-%d'
+                ).date()
+            except ValueError:
+                return jsonify({
+                    'success': False,
+                    'error': 'Invalid end_date format. Use YYYY-MM-DD'
+                }), 400
+
         email_processor = EmailProcessor()
         receipt_parser = ReceiptParser()
         ledger_manager = LedgerManager()
 
-        attachments = email_processor.fetch_pdf_attachments()
+        attachments = email_processor.fetch_pdf_attachments(
+            start_date=start_date,
+            end_date=end_date
+        )
         processed_count = 0
         results = []
 
@@ -57,11 +95,15 @@ def process_emails():
                 })
 
         email_processor.close()
-        
+
         return jsonify({
             'success': True,
             'processed_count': processed_count,
-            'results': results
+            'results': results,
+            'time_window': {
+                'start_date': start_date_str,
+                'end_date': end_date_str
+            }
         })
 
     except Exception as e:
@@ -69,6 +111,7 @@ def process_emails():
             'success': False,
             'error': str(e)
         }), 500
+
 
 @app.route('/upload-bank-statement', methods=['POST'])
 def upload_bank_statement():
@@ -89,7 +132,7 @@ def upload_bank_statement():
             # Process the CSV
             ledger_manager = LedgerManager()
             bank_processor = BankProcessor(ledger_manager)
-            
+
             bank_transactions = bank_processor.parse_csv(str(filepath))
             comparison = bank_processor.compare_transactions(bank_transactions)
 
@@ -112,6 +155,7 @@ def upload_bank_statement():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+
 @app.route('/ledger')
 def view_ledger():
     """View ledger transactions"""
@@ -125,11 +169,13 @@ def view_ledger():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+
 @app.route('/health')
 def health():
     """Health check endpoint"""
     return jsonify({'status': 'healthy'})
 
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=True) 
+    app.run(host='0.0.0.0', port=port, debug=True)

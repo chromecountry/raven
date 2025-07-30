@@ -6,6 +6,7 @@ API endpoints for receipt processing system
 
 import os
 import sys
+from datetime import datetime
 from pathlib import Path
 from flask import Flask, request, jsonify
 from werkzeug.utils import secure_filename
@@ -27,13 +28,48 @@ UPLOAD_FOLDER.mkdir(exist_ok=True)
 
 @app.route('/api/process-emails', methods=['POST'])
 def process_emails():
-    """Process emails endpoint"""
+    """Process emails endpoint with optional time window"""
     try:
+        # Parse optional date parameters
+        start_date_str = None
+        end_date_str = None
+        if request.is_json:
+            start_date_str = request.json.get('start_date')
+            end_date_str = request.json.get('end_date')
+        
+        start_date = None
+        end_date = None
+        
+        if start_date_str:
+            try:
+                start_date = datetime.strptime(
+                    start_date_str, '%Y-%m-%d'
+                ).date()
+            except ValueError:
+                return jsonify({
+                    'success': False,
+                    'error': 'Invalid start_date format. Use YYYY-MM-DD'
+                }), 400
+        
+        if end_date_str:
+            try:
+                end_date = datetime.strptime(
+                    end_date_str, '%Y-%m-%d'
+                ).date()
+            except ValueError:
+                return jsonify({
+                    'success': False,
+                    'error': 'Invalid end_date format. Use YYYY-MM-DD'
+                }), 400
+
         email_processor = EmailProcessor()
         receipt_parser = ReceiptParser()
         ledger_manager = LedgerManager()
 
-        attachments = email_processor.fetch_pdf_attachments()
+        attachments = email_processor.fetch_pdf_attachments(
+            start_date=start_date,
+            end_date=end_date
+        )
         processed_count = 0
         results = []
 
@@ -50,11 +86,15 @@ def process_emails():
                 })
 
         email_processor.close()
-        
+
         return jsonify({
             'success': True,
             'processed_count': processed_count,
-            'results': results
+            'results': results,
+            'time_window': {
+                'start_date': start_date_str,
+                'end_date': end_date_str
+            }
         })
 
     except Exception as e:
