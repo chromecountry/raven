@@ -87,10 +87,11 @@ def process_emails():
             if receipt_data.get('amount'):
                 ledger_manager.add_transaction(receipt_data)
                 processed_count += 1
+                amount = receipt_data.get('amount', 'Unknown').replace('$', '')
                 results.append({
                     'filename': filename,
                     'merchant': receipt_data.get('merchant', 'Unknown'),
-                    'amount': receipt_data.get('amount', 'Unknown'),
+                    'amount': amount,
                     'date': receipt_data.get('date', 'Unknown')
                 })
 
@@ -118,11 +119,17 @@ def upload_bank_statement():
     """Upload and compare bank statement"""
     try:
         if 'file' not in request.files:
-            return jsonify({'success': False, 'error': 'No file uploaded'}), 400
+            return jsonify({
+                'success': False,
+                'error': 'No file uploaded'
+            }), 400
 
         file = request.files['file']
         if file.filename == '':
-            return jsonify({'success': False, 'error': 'No file selected'}), 400
+            return jsonify({
+                'success': False,
+                'error': 'No file selected'
+            }), 400
 
         if file and file.filename.endswith('.csv'):
             filename = secure_filename(file.filename)
@@ -143,14 +150,17 @@ def upload_bank_statement():
                     'ledger_only': len(comparison['ledger_only']),
                     'bank_only': len(comparison['bank_only']),
                     'details': {
-                        'matches': comparison['matches'][:10],  # Limit to first 10
+                        'matches': comparison['matches'][:10],  # First 10
                         'ledger_only': comparison['ledger_only'][:10],
                         'bank_only': comparison['bank_only'][:10]
                     }
                 }
             })
 
-        return jsonify({'success': False, 'error': 'Invalid file type'}), 400
+        return jsonify({
+            'success': False,
+            'error': 'Invalid file type'
+        }), 400
 
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
